@@ -1,0 +1,215 @@
+/* Player Stats widget – stable headers & sorting, minimal overrides */
+
+/* ---------- Theme ---------- */
+:root{
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --text:#0f172a;
+  --muted:#64748b;
+  --primary-start:#3b2d57;
+  --primary-end:#0e4455;
+   /* how tight the default crop is */
+  --photo-zoom: 2.0;
+  /* how tight the image becomes on hover */
+  --photo-zoom-hover: 1.50;
+  /* move focus upward (0% = very top, 50% = middle) */
+  --photo-bias: 15%;
+  /* how big the circular frame pops out on wide screens */
+  --hover-pop: 2.0;
+}
+
+*{ box-sizing:border-box; }
+
+html, body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+}
+
+/* ---------- Card ---------- */
+.card{
+  max-width:1200px;
+  margin:18px auto;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 6px 24px rgba(0,0,0,.06);
+}
+
+.card-header{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:12px;
+  padding:16px;
+  background:linear-gradient(90deg, var(--primary-start), var(--primary-end));
+  color:#fff;
+}
+
+.title{
+  margin:0;
+  font-size:22px;
+  font-weight:800;
+}
+
+/* ---------- Table container ---------- */
+#playersTable{ width:100%; height:auto; }
+
+/* ---------- Tabulator cleanup (keep defaults for header!) ---------- */
+.tabulator{
+  border:none !important;
+  border-radius:0 0 16px 16px;
+}
+.tabulator .tabulator-tableholder{ background:transparent; }
+
+.tabulator .tabulator-header{ border-bottom:1px solid var(--border); }
+.tabulator .tabulator-col{
+  background:#f8fafc;
+  font-weight:800;
+}
+
+/* keep only horizontal row lines */
+.tabulator-row{
+  border-bottom:1px solid var(--border);
+  min-height:50px;                 /* room for photos */
+}
+.tabulator .tabulator-cell{
+  vertical-align:middle;
+  border-right:0 !important;
+  box-shadow:none !important;
+  font-weight:600;
+}
+
+/* frozen columns: no divider lines */
+.tabulator .tabulator-row .tabulator-cell.tabulator-frozen,
+.tabulator .tabulator-header .tabulator-col.tabulator-frozen{
+  border-right:0 !important;
+  box-shadow:none !important;
+}
+.tabulator .tabulator-frozen.tabulator-frozen-left::after,
+.tabulator .tabulator-frozen.tabulator-frozen-right::after{
+  display:none !important;
+}
+
+/* ⚠️ Minimal header tweak only (matches your working widget) */
+.tabulator .tabulator-header .tabulator-col .tabulator-col-title{
+  padding-right:0 !important;
+}
+
+/* ---------- Player cells ---------- */
+.player-link{
+  cursor:pointer;
+  font-weight:700;
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.player-link:hover{ text-decoration:underline; }
+
+.player-text{
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* Avatar wrapper: keeps the circle & border; scales on hover */
+/* Avatar wrapper: the circular frame that pops out */
+.player-photo-wrap{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:2px solid var(--border);
+  overflow:hidden;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  background:linear-gradient(135deg, var(--primary-start), var(--primary-end)); /* fallback when no image */
+  color:#fff;
+  font-weight:800;
+  font-size:12px;
+  transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+
+/* Big pop-out on hover (desktop / wide screens) */
+.player-photo-wrap:hover{
+  transform:scale(var(--hover-pop));
+  z-index:1000;
+  box-shadow:0 10px 36px rgba(0,0,0,.35);
+  border-color:var(--primary-start);
+}
+
+
+/* The actual <img>: tighter by default + top-biased focus */
+.player-photo{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+
+  /* Keep object-position in case your browser honors it… */
+  object-position: 50% var(--photo-bias);
+
+  /* …and also bias via transform-origin (works even if object-position seems ignored) */
+  transform: scale(var(--photo-zoom));
+  transform-origin: 50% var(--photo-bias);
+  transition:transform .22s ease, transform-origin .22s ease;
+}
+
+/* Extra zoom + slightly more top bias on hover */
+.player-photo-wrap:hover .player-photo{
+  transform: scale(var(--photo-zoom-hover));
+  transform-origin: 50% calc(var(--photo-bias) - 5%);
+}
+
+/* Fallback initials version shares the same wrapper (no <img>) */
+.player-photo-wrap.initials{
+  font-size:11px;
+  letter-spacing:.3px;
+}
+
+.jersey-number{
+  background:linear-gradient(135deg, var(--primary-start), var(--primary-end));
+  color:#fff;
+  padding:4px 8px; border-radius:6px;
+  font-weight:800; font-size:12px;
+  min-width:24px; text-align:center;
+  display:inline-block; margin-top:2px;
+}
+
+.stats-cell{ text-align:center; font-weight:600; }
+
+.comments-cell{
+  text-align:left; font-size:12px; color:var(--muted);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;
+}
+
+/* ----- Responsive behavior ----- */
+/* Smaller pop-out on narrow screens to avoid overlap */
+@media (max-width: 640px){
+  .player-photo-wrap:hover{
+    transform: scale(1.35);
+    box-shadow:0 6px 20px rgba(0,0,0,.25);
+  }
+  .player-photo-wrap:hover .player-photo{
+    /* just a tiny extra zoom on small screens */
+    transform: scale(calc(var(--photo-zoom) + 0.05));
+    transform-origin: 50% var(--photo-bias);
+  }
+}
+
+/* On touch devices (no real hover), disable the pop-out entirely */
+@media (hover: none) and (pointer: coarse){
+  .player-photo-wrap:hover{
+    transform:none;
+    box-shadow:none;
+  }
+  .player-photo-wrap:hover .player-photo{
+    transform: scale(var(--photo-zoom));
+    transform-origin: 50% var(--photo-bias);
+  }
+}
